@@ -1,0 +1,151 @@
+﻿<Window x:Class="WallpaperDownloader.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:localization="clr-namespace:WallpaperDownloader.Localization"
+        xmlns:viewModels1="clr-namespace:WallpaperDownloader.ViewModels"
+        xmlns:views="clr-namespace:WallpaperDownloader.Views"
+        xmlns:views1="clr-namespace:WallpaperDownloader.Common.Views"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        mc:Ignorable="d"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        d:DataContext="{d:DesignInstance viewModels1:MainViewModel}"
+        Height="{Binding WindowMinHeight}" 
+        Width="{Binding WindowMinWidth}"
+        MinHeight="{Binding WindowMinHeight}"
+        MinWidth="{Binding WindowMinWidth}"
+        AllowsTransparency="True"
+        d:DesignHeight="500"
+        d:DesignWidth="450"
+        Title="{x:Static localization:strings.MainWindowHeader}"
+        x:Name="Self"
+        StateChanged="MainWindow_OnStateChanged"
+        Activated="MainWindow_OnActivated"
+        Loaded="MainWindow_OnLoaded"
+        Closing="MainWindow_OnClosing"
+        Icon="pack://application:,,,/ico.ico">
+
+    <Border BorderBrush="{StaticResource WindowBorderColor}"
+            BorderThickness="1"
+            Background="{StaticResource SubstrateColor}">
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+
+            <tb:TaskbarIcon
+                x:Name="TaskbarIcon"
+                IconSource="/Views/Images/tray_ico.ico"
+                ToolTipText="{Binding WorkGroup.Name, StringFormat={x:Static localization:strings.TrayTooltip}}"
+                TrayLeftMouseDown="TaskbarIcon_OnTrayLeftMouseDown">
+
+                <tb:TaskbarIcon.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{x:Static localization:strings.ExitAppTrayMenuItem}" Command="{Binding ExitFromAppCommand}">
+                            <MenuItem.Icon>
+                                <Image Source="/Views/Images/close_menu_item.png"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </tb:TaskbarIcon.ContextMenu>
+
+            </tb:TaskbarIcon>
+
+            <views1:WindowHeaderView Grid.Row="0" 
+                                    MenuType="MinimizeAndClose" 
+                                    Title="{x:Static localization:strings.MainWindowHeader}"
+                                    ParentWindow="{Binding ElementName=Self}"/>
+
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <views:AuthStatus Grid.Column="0" 
+                                       DataContext="{Binding ElementName=Self, Path=DataContext.AuthorizationStatus}"/>
+
+                    <Button Grid.Column="1"
+                            Margin="0,0,5,0"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ButtonSettingsStyle}"
+                            Command="{Binding ConnectionSettingsCommand}"/>
+
+                </Grid>
+
+                <StackPanel Grid.Row="1" Orientation="Horizontal"
+                            Margin="10">
+                    <TextBlock  Foreground="{StaticResource MainBlackColor}"
+                                FontWeight="Regular"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Left"
+                                Margin="0,0,5,0"
+                                FontSize="15px"
+                                Text="{x:Static localization:strings.UpdateWallpaperDescription}"/>
+                    <ComboBox FocusVisualStyle="{x:Null}"
+                              Height="35"
+                              Width="120"
+                              ItemsSource="{Binding Periods}"
+                              SelectedValue="{Binding SelectedPeriod}"
+                              DisplayMemberPath="Description"
+                              Style="{StaticResource ComboMoxStyle}">
+                        <ComboBox.Resources>
+                            <Style TargetType="ScrollBar">
+                                <Setter Property="Template" Value="{StaticResource VerticalScrollBar}"/>
+                            </Style>
+                        </ComboBox.Resources>
+                    </ComboBox>
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="2"
+                            Margin="10">
+
+                    <TextBlock Foreground="{StaticResource MainBlackColor}"
+                               FontWeight="Regular"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Margin="0,0,5,0"
+                               FontSize="15px"
+                               Text="{x:Static localization:strings.WorkGroupDescription}"/>
+
+                    <Image Source="{Binding WorkGroup.Photo}"
+                           Width="50"
+                           Height="50"
+                           VerticalAlignment="Center"
+                           Margin="10,0,10,0"/>
+
+                </StackPanel>
+                
+                <StackPanel Orientation="Horizontal"
+                            Grid.Row="3"
+                            Margin="10,20,10,10">
+
+                    <TextBlock Foreground="{StaticResource MainBlackColor}"
+                               FontWeight="Regular"
+                               VerticalAlignment="Center"
+                               HorizontalAlignment="Left"
+                               Margin="0,0,5,0"
+                               FontSize="15px"
+                               Text="{Binding LastDownloadDateTime, StringFormat={x:Static localization:strings.LastDownloadDateTIme}}"/>
+
+                </StackPanel>
+
+            </Grid>
+        </Grid>
+    </Border>
+
+</Window>

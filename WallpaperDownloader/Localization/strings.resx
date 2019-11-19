@@ -117,4 +117,100 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AuthError" xml:space="preserve">
+    <value>ОШИБКА</value>
+  </data>
+  <data name="Authorization" xml:space="preserve">
+    <value>АВТОРИЗАЦИЯ</value>
+  </data>
+  <data name="AuthorizeError" xml:space="preserve">
+    <value>Ошибка авторизации</value>
+  </data>
+  <data name="AuthStatus" xml:space="preserve">
+    <value>СТАТУС АВТОРИЗАЦИИ</value>
+  </data>
+  <data name="AuthSuccess" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="CaptchaHeader" xml:space="preserve">
+    <value>Ввод Captcha</value>
+  </data>
+  <data name="Enter" xml:space="preserve">
+    <value>Войти</value>
+  </data>
+  <data name="EnterPassword" xml:space="preserve">
+    <value>Введите пароль</value>
+  </data>
+  <data name="EnterUserName" xml:space="preserve">
+    <value>Введите пользователя</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Ошибка!</value>
+  </data>
+  <data name="MainWindowHeader" xml:space="preserve">
+    <value>WallpaperDownloader</value>
+  </data>
+  <data name="MessageBoxError" xml:space="preserve">
+    <value>Ошибка!</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>Нет</value>
+  </data>
+  <data name="Ok" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="TwoFactCode" xml:space="preserve">
+    <value>Код</value>
+  </data>
+  <data name="TwoFactEnterCode" xml:space="preserve">
+    <value>Введите код</value>
+  </data>
+  <data name="TwoFactHelp" xml:space="preserve">
+    <value>Если у вас включена двухфакторная авторизация, введите код и нажмите "ОК", если нет, проигнорируйте это окно.</value>
+  </data>
+  <data name="TwoFactorAuthorizationViewHeader" xml:space="preserve">
+    <value>Ввод кода двухфакторной авторизации</value>
+  </data>
+  <data name="UserName" xml:space="preserve">
+    <value>Пользователь</value>
+  </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Да</value>
+  </data>
+  <data name="Period1" xml:space="preserve">
+    <value>Пол часа</value>
+  </data>
+  <data name="Period2" xml:space="preserve">
+    <value>Час</value>
+  </data>
+  <data name="Period3" xml:space="preserve">
+    <value>Два часа</value>
+  </data>
+  <data name="UpdateWallpaperDescription" xml:space="preserve">
+    <value>Загружать и обновлять обои каждые:</value>
+  </data>
+  <data name="WorkGroupDescription" xml:space="preserve">
+    <value>Обои загружаются с группы:</value>
+  </data>
+  <data name="LastDownloadDateTIme" xml:space="preserve">
+    <value>Последнее обновление обой: {0}</value>
+  </data>
+  <data name="TrayTooltip" xml:space="preserve">
+    <value>WallpaperDownloader. Группа: {0}</value>
+  </data>
+  <data name="ExitAppTrayMenuItem" xml:space="preserve">
+    <value>Выход</value>
+  </data>
+  <data name="AutoRun" xml:space="preserve">
+    <value>Автозапуск при старте Windows</value>
+  </data>
 </root>
