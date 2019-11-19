@@ -32,11 +32,14 @@ namespace WallpaperDownloader.ViewModels
 
         private VkApi _api;
         
-        private readonly Timer _updateIsAuthorizedTimer = new Timer(1000);
+        private readonly Timer _updateIsAuthorizedTimer = new Timer(5000);
+        private const int MaxConnectionAttempt = 10;
         private Thread _wallpaperUpdaterThread;
         private Period _selectedPeriod;
         private DateTime _lastDownloadDateTime;
         private GroupViewModel _workGroup;
+        private bool _isLoadStartupProcedure;
+        private int _connectionAttempt;
 
         #endregion
 
@@ -152,7 +155,16 @@ namespace WallpaperDownloader.ViewModels
                         if (photoAttachment != null && photoAttachment.Type.Name == "Photo")
                         {
                             var photo = (VkNet.Model.Attachments.Photo) photoAttachment.Instance;
-                            if (photo?.Id != null)
+
+                            var isHorizontal = true;
+
+                            var size = photo?.Sizes.FirstOrDefault();
+                            if (size != null && size?.Height > size?.Width)
+                            {
+                                isHorizontal = false;
+                            }
+
+                            if (photo?.Id != null && isHorizontal)
                             {
                                 if (UserSettings.LastDownloadPhotoId != photo.Id.ToString())
                                 {
@@ -387,15 +399,13 @@ namespace WallpaperDownloader.ViewModels
             }
         }
 
-        #endregion
-
-        #region Others
-
         /// <summary>
-        /// Загрузка
+        /// Стартовые процедуры
         /// </summary>
-        public async void OnLoad()
+        private async void StartupProcedure()
         {
+            _isLoadStartupProcedure = true;
+
             if (_wallpaperUpdaterThread == null)
             {
                 _wallpaperUpdaterThread = new Thread(Updater);
@@ -425,6 +435,21 @@ namespace WallpaperDownloader.ViewModels
             catch (Exception e)
             {
                 LoggerFacade.WriteError(e);
+            }
+        }
+
+        #endregion
+
+        #region Others
+
+        /// <summary>
+        /// Загрузка
+        /// </summary>
+        public void OnLoad()
+        {
+            if (!_isLoadStartupProcedure)
+            {
+                StartupProcedure();
             }
         }
 
@@ -503,29 +528,26 @@ namespace WallpaperDownloader.ViewModels
         {
             if (!_api.IsAuthorized)
             {
-                
-            }
-        }
-
-
-        private void UpdateWallpaperTimer_OnElapsed(object sender, ElapsedEventArgs e)
-        {
-            try
-            {
-                var get = _api.Wall.Get(new WallGetParams
+                if (_connectionAttempt == MaxConnectionAttempt)
                 {
-                   OwnerId  = AppInfo.HDWallpaperGroupId
-                });
+                    if (!ConnectionSetupViewModel.IsOpen)
+                    {
+                        ConnectionSettingsCommand.Execute(null);
+                    }
+                    return;
+                }
 
-                var a = get;
+                AuthorizeFromAccessToken();
+                _connectionAttempt++;
             }
-            catch (Exception exception)
+            else
             {
-                
+                _connectionAttempt = 0;
             }
         }
 
         #endregion
+
         #endregion
 
         #region Commands
