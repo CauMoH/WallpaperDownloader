@@ -310,5 +310,8 @@
   <ItemGroup>
     <Resource Include="Views\Images\tray_ico.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Views\Images\windows-logo.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
