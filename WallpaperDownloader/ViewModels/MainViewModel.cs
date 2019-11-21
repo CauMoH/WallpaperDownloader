@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Prism.Commands;
 using Prism.Mvvm;
 using VkNet;
@@ -291,22 +292,32 @@ namespace WallpaperDownloader.ViewModels
             
             try
             {
-                _api.Authorize(new ApiAuthParams
+                var apiParams = new ApiAuthParams
                 {
                     ApplicationId = AppInfo.VkAppId,
                     AccessToken = UserSettings.AccessToken,
-                    CaptchaSid = captchaSid,
                     CaptchaKey = captchaKey,
                     Settings = Settings.All
-                });
+                };
+
+                if (captchaSid != null)
+                {
+                    apiParams.CaptchaSid = captchaSid;
+                }
+
+                _api.Authorize(apiParams);
             }
             catch (CaptchaNeededException e)
             {
-                CaptchaViewModel.Open(e.Sid, e.Img);
+                InitApi();
+
+                CaptchaViewModel.Open((long)e.Sid, e.Img);
                 return;
             }
             catch (Exception e)
             {
+                InitApi();
+
                 LoggerFacade.WriteError(Localization.strings.AuthorizeError, e, isShow: true);
                 ConnectionSettingsCommand.Execute(null);
             }
@@ -333,7 +344,7 @@ namespace WallpaperDownloader.ViewModels
             {
                 try
                 {
-                    _api.Authorize(new ApiAuthParams
+                    var apiParams = new ApiAuthParams
                     {
                         ApplicationId = AppInfo.VkAppId,
                         Login = UserSettings.UserName,
@@ -343,15 +354,21 @@ namespace WallpaperDownloader.ViewModels
                             var code = TwoFactorAuthorizationViewModel.GetCode();
                             return code;
                         },
-                        CaptchaSid = captchaSid,
                         CaptchaKey = captchaKey,
                         Settings = Settings.All
-                    });
+                    };
+
+                    if (captchaSid != null)
+                    {
+                        apiParams.CaptchaSid = captchaSid;
+                    }
+
+                    _api.Authorize(apiParams);
 
                     if (_api.IsAuthorized)
                     {
                         UserSettings.AccessToken = _api.Token;
-                        if (_api.UserId != null) UserSettings.UserId = (uint)_api.UserId;
+                        if (_api.UserId != null) UserSettings.UserId = (uint) _api.UserId;
                         UserSettings.Save();
                     }
                 }
@@ -359,20 +376,42 @@ namespace WallpaperDownloader.ViewModels
                 {
                     UiInvoker.Invoke(() =>
                     {
-                        CaptchaViewModel.Open(e.Sid, e.Img);
+                        CaptchaViewModel.Open((long) e.Sid, e.Img);
                     });
                 }
                 catch (VkApiAuthorizationException e)
                 {
-                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message, isShow: true);
+                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message,
+                        isShow: true);
 
                     UiInvoker.Invoke(() =>
                     {
                         ConnectionSettingsCommand.Execute(null);
                     });
                 }
+                catch (VkAuthorizationException e)
+                {
+                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message,
+                        isShow: true);
+
+                    UiInvoker.Invoke(() =>
+                    {
+                        ConnectionSettingsCommand.Execute(null);
+                    });
+                }
+                catch (Exception e)
+                {
+                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message,
+                        isShow: true);
+                }
                 finally
                 {
+                    if (!_api.IsAuthorized)
+                    {
+                        //TODO Костыль
+                        InitApi();
+                    }
+
                     UiInvoker.Invoke(() =>
                     {
                         TwoFactorAuthorizationViewModel.IsOpen = false;
@@ -521,8 +560,11 @@ namespace WallpaperDownloader.ViewModels
                 {
                     if (!ConnectionSetupViewModel.IsOpen)
                     {
-                        ConnectionSettingsCommand.Execute(null);
-                        _connectionAttempt = 0;
+                        UiInvoker.Invoke(() =>
+                        {
+                            ConnectionSettingsCommand.Execute(null);
+                            _connectionAttempt = 0;
+                        });
                     }
                     return;
                 }
