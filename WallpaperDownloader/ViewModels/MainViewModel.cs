@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using Logging;
@@ -286,13 +287,8 @@ namespace WallpaperDownloader.ViewModels
         public void AuthorizeFromAccessToken(long? captchaSid = null, string captchaKey = null)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.AccessToken))
-            {
-                if (string.IsNullOrWhiteSpace(UserSettings.UserName) || UserSettings.Password.Length == 0) return;
-
-                AuthorizeFromLogPass();
                 return;
-            }
-
+            
             try
             {
                 _api.Authorize(new ApiAuthParams
@@ -326,77 +322,70 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Авторизация по логину и паролю
         /// </summary>
-        public async void AuthorizeFromLogPass(long? captchaSid = null, string captchaKey = null)
+        public void AuthorizeFromLogPass(long? captchaSid = null, string captchaKey = null)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.UserName) || UserSettings.Password.Length == 0)
                 return;
 
             TwoFactorAuthorizationViewModel.Open();
 
-            try
+            Task.Run(() =>
             {
-                await _api.AuthorizeAsync(new ApiAuthParams
+                try
                 {
-                    ApplicationId = AppInfo.VkAppId,
-                    Login = UserSettings.UserName,
-                    Password = new System.Net.NetworkCredential(string.Empty, UserSettings.Password).Password,
-                    TwoFactorAuthorization = () =>
+                    _api.Authorize(new ApiAuthParams
                     {
-                        var code = TwoFactorAuthorizationViewModel.GetCode();
-                        return code;
-                    },
-                    CaptchaSid = captchaSid,
-                    CaptchaKey = captchaKey,
-                    Settings = Settings.All
-                });
+                        ApplicationId = AppInfo.VkAppId,
+                        Login = UserSettings.UserName,
+                        Password = new NetworkCredential(string.Empty, UserSettings.Password).Password,
+                        TwoFactorAuthorization = () =>
+                        {
+                            var code = TwoFactorAuthorizationViewModel.GetCode();
+                            return code;
+                        },
+                        CaptchaSid = captchaSid,
+                        CaptchaKey = captchaKey,
+                        Settings = Settings.All
+                    });
 
-                if (_api.IsAuthorized)
-                {
-                    UserSettings.AccessToken = _api.Token;
-                    if (_api.UserId != null) UserSettings.UserId = (uint) _api.UserId;
-                    UserSettings.Save();
-                }
-            }
-            catch (CaptchaNeededException e)
-            {
-                UiInvoker.Invoke(() =>
-                {
-                    CaptchaViewModel.Open(e.Sid, e.Img);
-                });
-            }
-            catch (VkApiAuthorizationException e)
-            {
-                LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message,
-                    isShow: true);
-
-                UiInvoker.Invoke(() =>
-                {
-                    ConnectionSettingsCommand.Execute(null);
-                });
-            }
-            catch (InvalidOperationException e)
-            {
-                LoggerFacade.WriteError(Localization.strings.AuthorizeError, isShow: true);
-
-                UiInvoker.Invoke(() =>
-                {
-                    ConnectionSettingsCommand.Execute(null);
-                });
-            }
-            finally
-            {
-                UiInvoker.Invoke(() =>
-                {
-                    TwoFactorAuthorizationViewModel.IsOpen = false;
-
-                    RaisePropertyChanged(nameof(AuthorizationStatus));
-
-                    if (AuthorizationStatus)
+                    if (_api.IsAuthorized)
                     {
-                        OnLoad();
+                        UserSettings.AccessToken = _api.Token;
+                        if (_api.UserId != null) UserSettings.UserId = (uint)_api.UserId;
+                        UserSettings.Save();
                     }
-                });
-            }
+                }
+                catch (CaptchaNeededException e)
+                {
+                    UiInvoker.Invoke(() =>
+                    {
+                        CaptchaViewModel.Open(e.Sid, e.Img);
+                    });
+                }
+                catch (VkApiAuthorizationException e)
+                {
+                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message, isShow: true);
+
+                    UiInvoker.Invoke(() =>
+                    {
+                        ConnectionSettingsCommand.Execute(null);
+                    });
+                }
+                finally
+                {
+                    UiInvoker.Invoke(() =>
+                    {
+                        TwoFactorAuthorizationViewModel.IsOpen = false;
+
+                        RaisePropertyChanged(nameof(AuthorizationStatus));
+
+                        if (AuthorizationStatus)
+                        {
+                            OnLoad();
+                        }
+                    });
+                }
+            });
         }
 
         /// <summary>
@@ -533,11 +522,11 @@ namespace WallpaperDownloader.ViewModels
                     if (!ConnectionSetupViewModel.IsOpen)
                     {
                         ConnectionSettingsCommand.Execute(null);
+                        _connectionAttempt = 0;
                     }
                     return;
                 }
 
-                AuthorizeFromAccessToken();
                 _connectionAttempt++;
             }
             else

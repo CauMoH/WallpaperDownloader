@@ -175,7 +175,7 @@
     <value>Введите код</value>
   </data>
   <data name="TwoFactHelp" xml:space="preserve">
-    <value>Если у вас включена двухфакторная авторизация, введите код и нажмите "ОК", если нет, проигнорируйте это окно.</value>
+    <value>Если у вас включена двухфакторная авторизация, введите код. Если нет, просто закройте его.</value>
   </data>
   <data name="TwoFactorAuthorizationViewHeader" xml:space="preserve">
     <value>Ввод кода двухфакторной авторизации</value>

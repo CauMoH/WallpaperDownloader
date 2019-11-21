@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Prism.Commands;
@@ -76,7 +77,7 @@ namespace WallpaperDownloader.ViewModels
                 Thread.Sleep(100);
             }
 
-            return string.IsNullOrWhiteSpace(TwoFactCode) ? "1111" : TwoFactCode;
+            return TwoFactCode;
         }
 
         #region Commands

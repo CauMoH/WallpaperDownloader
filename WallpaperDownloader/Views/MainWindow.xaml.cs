@@ -20,6 +20,8 @@ namespace WallpaperDownloader.Views
 
         private bool _isReallyLoaded;
 
+        private bool _shown;
+
         #endregion
 
         /// <inheritdoc />
@@ -109,6 +111,7 @@ namespace WallpaperDownloader.Views
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             LoadDimensions();
+
             lock (_lockedObj)
             {
                 _isReallyLoaded = true;
@@ -152,6 +155,21 @@ namespace WallpaperDownloader.Views
         private void TaskbarIcon_OnTrayLeftMouseDown(object sender, RoutedEventArgs e)
         {
             ActiveWindow();
+        }
+        
+        protected override void OnContentRendered(System.EventArgs e)
+        {
+            base.OnContentRendered(e);
+
+            if (_shown)
+                return;
+
+            _shown = true;
+
+            if (ViewModel.AuthorizationStatus)
+            {
+                Close();
+            }
         }
     }
 }
