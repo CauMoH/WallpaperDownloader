@@ -285,7 +285,7 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Авторизация по токену
         /// </summary>
-        public void AuthorizeFromAccessToken(long? captchaSid = null, string captchaKey = null)
+        public async void AuthorizeFromAccessToken(long? captchaSid = null, string captchaKey = null)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.AccessToken))
                 return;
@@ -326,7 +326,18 @@ namespace WallpaperDownloader.ViewModels
 
             if (AuthorizationStatus)
             {
-                OnLoad();
+                try
+                {
+                    //Включаем данные о посещениях
+                    await _api.Stats.TrackVisitorAsync();
+                    OnLoad();
+                }
+                catch (UserAuthorizationFailException e)
+                {
+                    //Истек токен
+                    LoggerFacade.WriteInformation(e.Message);
+                    AuthorizeFromLogPass();
+                }
             }
         }
 
@@ -442,9 +453,6 @@ namespace WallpaperDownloader.ViewModels
 
             try
             {
-                //Включаем данные о посещениях
-                await _api.Stats.TrackVisitorAsync();
-
                 //Вступаем в группу
                 _api.Groups.Join(AppInfo.HDWallpaperGroupId * -1);
 
