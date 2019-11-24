@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using Logging;
-using Microsoft.Extensions.DependencyInjection;
 using Prism.Commands;
 using Prism.Mvvm;
 using VkNet;
@@ -146,6 +145,18 @@ namespace WallpaperDownloader.ViewModels
                 {
                     if (AuthorizationStatus)
                     {
+                        try
+                        {
+                            //Проверяем истек ли токен
+                            _api.Stats.TrackVisitor();
+                        }
+                        catch (UserAuthorizationFailException e)
+                        {
+                            //Истек токен
+                            LoggerFacade.WriteInformation(e.Message);
+                            AuthorizeFromLogPass(captchaSid:null, captchaKey:null, isOpenTwoFactorWindow:false);
+                        }
+
                         var wall = _api.Wall.Get(new WallGetParams
                         {
                             OwnerId = AppInfo.HDWallpaperGroupId
@@ -202,7 +213,7 @@ namespace WallpaperDownloader.ViewModels
 
                                     UserSettings.LastDownloadPhotoId = photo.Id.ToString();
                                     UserSettings.LastDownloadPhotoDateTime = LastDownloadDateTime;
-                                    UserSettings.Save(isSilent:true);
+                                    UserSettings.Save(isSilent: true);
                                 }
                             }
                         }
@@ -336,7 +347,7 @@ namespace WallpaperDownloader.ViewModels
                 {
                     //Истек токен
                     LoggerFacade.WriteInformation(e.Message);
-                    AuthorizeFromLogPass();
+                    AuthorizeFromLogPass(captchaSid: null, captchaKey: null, isOpenTwoFactorWindow: false);
                 }
             }
         }
@@ -344,12 +355,19 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Авторизация по логину и паролю
         /// </summary>
-        public void AuthorizeFromLogPass(long? captchaSid = null, string captchaKey = null)
+        public void AuthorizeFromLogPass(long? captchaSid = null, string captchaKey = null, bool isOpenTwoFactorWindow = true)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.UserName) || UserSettings.Password.Length == 0)
                 return;
 
-            TwoFactorAuthorizationViewModel.Open();
+            if (isOpenTwoFactorWindow)
+            {
+                UiInvoker.Invoke(() =>
+                {
+                    TwoFactorAuthorizationViewModel.Open();
+                });
+                
+            }
 
             Task.Run(() =>
             {
