@@ -275,7 +275,14 @@ namespace WallpaperDownloader.ViewModels
         /// </summary>
         private void InitApi()
         {
+            if (_api != null)
+            {
+                _api.OnTokenExpires -= Api_OnTokenExpires;
+            }
+
             _api = new VkApi();
+
+            _api.OnTokenExpires += Api_OnTokenExpires;
         }
 
         /// <summary>
@@ -601,6 +608,15 @@ namespace WallpaperDownloader.ViewModels
             {
                 _connectionAttempt = 0;
             }
+        }
+
+        #endregion
+
+        #region Api
+
+        private void Api_OnTokenExpires(VkApi sender)
+        {
+            AuthorizeFromLogPass(captchaSid:null, captchaKey:null, isOpenTwoFactorWindow:false);
         }
 
         #endregion
