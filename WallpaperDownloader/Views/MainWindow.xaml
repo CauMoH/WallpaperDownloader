@@ -8,6 +8,7 @@
         xmlns:views="clr-namespace:WallpaperDownloader.Views"
         xmlns:views1="clr-namespace:WallpaperDownloader.Common.Views"
         xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:gl="clr-namespace:System.Globalization;assembly=mscorlib"
         mc:Ignorable="d"
         WindowStyle="None"
         ResizeMode="NoResize"
@@ -62,6 +63,7 @@
 
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -140,9 +142,19 @@
                                HorizontalAlignment="Left"
                                Margin="0,0,5,0"
                                FontSize="15px"
-                               Text="{Binding LastDownloadDateTime, StringFormat={x:Static localization:strings.LastDownloadDateTIme}}"/>
+                               Text="{Binding LastDownloadDateTime, StringFormat={x:Static localization:strings.LastDownloadDateTIme}, 
+                                                                    ConverterCulture={x:Static gl:CultureInfo.InvariantCulture}}"/>
 
                 </StackPanel>
+                
+                <Button Grid.Row="4"
+                        Style="{StaticResource MainButtonStyle}"
+                        Content="{x:Static localization:strings.UpdateWallpaper}"
+                        Command="{Binding UpdateWallpaperCommand}"
+                        Width="150"
+                        HorizontalAlignment="Left"
+                        Margin="10"
+                        Height="30"/>
 
             </Grid>
         </Grid>

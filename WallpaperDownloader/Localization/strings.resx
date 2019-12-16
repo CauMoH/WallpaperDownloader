@@ -121,7 +121,7 @@
     <value>ОШИБКА</value>
   </data>
   <data name="Authorization" xml:space="preserve">
-    <value>АВТОРИЗАЦИЯ</value>
+    <value>АВТОРИЗАЦИЯ - ВКонтакте</value>
   </data>
   <data name="AuthorizeError" xml:space="preserve">
     <value>Ошибка авторизации</value>
@@ -212,5 +212,8 @@
   </data>
   <data name="AutoRun" xml:space="preserve">
     <value>Автозапуск при старте Windows</value>
+  </data>
+  <data name="UpdateWallpaper" xml:space="preserve">
+    <value>Обновить сейчас</value>
   </data>
 </root>

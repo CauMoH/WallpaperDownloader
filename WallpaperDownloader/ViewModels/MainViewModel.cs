@@ -136,95 +136,99 @@ namespace WallpaperDownloader.ViewModels
             _updateIsAuthorizedTimer.Elapsed += UpdateIsAuthorizedTimer_OnElapsed;
             _updateIsAuthorizedTimer.Start();
         }
-        
+
         private void Updater()
         {
             while (true)
             {
-                try
+                Update();
+                Thread.Sleep(SelectedPeriod.TimeSpanPeriod);
+            }
+        }
+
+        private void Update()
+        {
+            try
+            {
+                if (AuthorizationStatus)
                 {
-                    if (AuthorizationStatus)
+                    try
                     {
-                        try
+                        //Проверяем истек ли токен
+                        _api.Stats.TrackVisitor();
+                    }
+                    catch (UserAuthorizationFailException e)
+                    {
+                        //Истек токен
+                        LoggerFacade.WriteInformation(e.Message);
+                        AuthorizeFromLogPass(captchaSid: null, captchaKey: null, isOpenTwoFactorWindow: false);
+                    }
+
+                    var wall = _api.Wall.Get(new WallGetParams
+                    {
+                        OwnerId = AppInfo.HDWallpaperGroupId
+                    });
+
+                    var post = wall.WallPosts.FirstOrDefault();
+                    var photoAttachment = post?.Attachment;
+
+                    if (photoAttachment != null && photoAttachment.Type.Name == "Photo")
+                    {
+                        var photo = (VkNet.Model.Attachments.Photo)photoAttachment.Instance;
+
+                        var isHorizontal = true;
+
+                        var size = photo?.Sizes.FirstOrDefault();
+                        if (size != null && size?.Height > size?.Width)
                         {
-                            //Проверяем истек ли токен
-                            _api.Stats.TrackVisitor();
+                            isHorizontal = false;
                         }
-                        catch (UserAuthorizationFailException e)
+
+                        if (photo?.Id != null && isHorizontal)
                         {
-                            //Истек токен
-                            LoggerFacade.WriteInformation(e.Message);
-                            AuthorizeFromLogPass(captchaSid:null, captchaKey:null, isOpenTwoFactorWindow:false);
-                        }
-
-                        var wall = _api.Wall.Get(new WallGetParams
-                        {
-                            OwnerId = AppInfo.HDWallpaperGroupId
-                        });
-
-                        var post = wall.WallPosts.FirstOrDefault();
-                        var photoAttachment = post?.Attachment;
-
-                        if (photoAttachment != null && photoAttachment.Type.Name == "Photo")
-                        {
-                            var photo = (VkNet.Model.Attachments.Photo) photoAttachment.Instance;
-
-                            var isHorizontal = true;
-
-                            var size = photo?.Sizes.FirstOrDefault();
-                            if (size != null && size?.Height > size?.Width)
+                            if (UserSettings.LastDownloadPhotoId != photo.Id.ToString())
                             {
-                                isHorizontal = false;
-                            }
-
-                            if (photo?.Id != null && isHorizontal)
-                            {
-                                if (UserSettings.LastDownloadPhotoId != photo.Id.ToString())
+                                var comments = _api.Photo.GetComments(new PhotoGetCommentsParams
                                 {
-                                    var comments = _api.Photo.GetComments(new PhotoGetCommentsParams
+                                    OwnerId = photo.OwnerId,
+                                    PhotoId = (ulong)photo.Id,
+                                    Extended = true
+                                });
+
+                                var comment = comments?.FirstOrDefault();
+
+                                var docAttachment = comment?.Attachment;
+                                if (docAttachment != null && docAttachment.Type.Name == "Document")
+                                {
+                                    var document = (VkNet.Model.Attachments.Document)docAttachment.Instance;
+                                    var url = document?.Uri;
+
+                                    if (!string.IsNullOrWhiteSpace(url))
                                     {
-                                        OwnerId = photo.OwnerId,
-                                        PhotoId = (ulong) photo.Id,
-                                        Extended = true
-                                    });
+                                        Directory.CreateDirectory(PathHelper.PhotoFolderPath);
 
-                                    var comment = comments?.FirstOrDefault();
+                                        var isOk = SavePhoto(url);
 
-                                    var docAttachment = comment?.Attachment;
-                                    if (docAttachment != null && docAttachment.Type.Name == "Document")
-                                    {
-                                        var document = (VkNet.Model.Attachments.Document) docAttachment.Instance;
-                                        var url = document?.Uri;
-
-                                        if (!string.IsNullOrWhiteSpace(url))
+                                        if (isOk)
                                         {
-                                            Directory.CreateDirectory(PathHelper.PhotoFolderPath);
-
-                                            var isOk = SavePhoto(url);
-
-                                            if (isOk)
-                                            {
-                                                ExtensionMethods.SetBackgroud(PathHelper.PhotoFilePath);
-                                            }
+                                            ExtensionMethods.SetBackgroud(PathHelper.PhotoFilePath);
                                         }
                                     }
-
-                                    LastDownloadDateTime = DateTime.Now;
-
-                                    UserSettings.LastDownloadPhotoId = photo.Id.ToString();
-                                    UserSettings.LastDownloadPhotoDateTime = LastDownloadDateTime;
-                                    UserSettings.Save(isSilent: true);
                                 }
+
+                                LastDownloadDateTime = DateTime.Now;
+
+                                UserSettings.LastDownloadPhotoId = photo.Id.ToString();
+                                UserSettings.LastDownloadPhotoDateTime = LastDownloadDateTime;
+                                UserSettings.Save(isSilent: true);
                             }
                         }
                     }
                 }
-                catch (Exception e)
-                {
-                    LoggerFacade.WriteError(e);
-                }
-                
-                Thread.Sleep(SelectedPeriod.TimeSpanPeriod);
+            }
+            catch (Exception e)
+            {
+                LoggerFacade.WriteError(e);
             }
         }
 
@@ -629,6 +633,7 @@ namespace WallpaperDownloader.ViewModels
         {
             ConnectionSettingsCommand = new DelegateCommand(ConnectionSettingsExecute);
             ExitFromAppCommand = new DelegateCommand(ExitFromAppExecute);
+            UpdateWallpaperCommand = new DelegateCommand(UpdateWallpaperExecute);
         }
 
         #region Command Props
@@ -636,6 +641,8 @@ namespace WallpaperDownloader.ViewModels
         public ICommand ConnectionSettingsCommand { get; private set; }
 
         public ICommand ExitFromAppCommand { get; private set; }
+
+        public ICommand UpdateWallpaperCommand { get; private set; }
 
         #endregion
 
@@ -647,6 +654,11 @@ namespace WallpaperDownloader.ViewModels
         private void ExitFromAppExecute()
         {
             ExitFromApp();
+        }
+
+        private void UpdateWallpaperExecute()
+        {
+            Update();
         }
 
         #endregion

@@ -70,7 +70,7 @@ namespace WallpaperDownloader.Localization {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на АВТОРИЗАЦИЯ.
+        ///   Ищет локализованную строку, похожую на АВТОРИЗАЦИЯ - ВКонтакте.
         /// </summary>
         public static string Authorization {
             get {
@@ -309,6 +309,15 @@ namespace WallpaperDownloader.Localization {
         public static string TwoFactorAuthorizationViewHeader {
             get {
                 return ResourceManager.GetString("TwoFactorAuthorizationViewHeader", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Обновить сейчас.
+        /// </summary>
+        public static string UpdateWallpaper {
+            get {
+                return ResourceManager.GetString("UpdateWallpaper", resourceCulture);
             }
         }
         
