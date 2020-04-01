@@ -115,6 +115,7 @@ namespace WallpaperDownloader.ViewModels
 
         public MainViewModel()
         {
+            //test
             LoggerFacade.LogMessageAdded += LoggerFacade_OnLogMessageAdded;
 
             UserSettings = new UserSettings();
