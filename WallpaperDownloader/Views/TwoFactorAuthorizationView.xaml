@@ -16,6 +16,7 @@
         WindowStyle="None"
         Width="450"
         Height="190"
+        Topmost="True"
         AllowsTransparency="True"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True"

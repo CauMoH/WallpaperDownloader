@@ -2,13 +2,13 @@
 {
     public sealed class CaptchaEnteredEventArgs : System.EventArgs
     {
-        public CaptchaEnteredEventArgs(long captchaSid, string captchaKey)
+        public CaptchaEnteredEventArgs(ulong captchaSid, string captchaKey)
         {
             CaptchaSid = captchaSid;
             CaptchaKey = captchaKey;
         }
 
-        public long CaptchaSid { get; }
+        public ulong CaptchaSid { get; }
 
         public string CaptchaKey { get; }
     }

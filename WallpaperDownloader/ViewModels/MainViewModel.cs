@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace WallpaperDownloader.ViewModels
         #region Members
 
         private VkApi _api;
-        
+
         private readonly Timer _updateIsAuthorizedTimer = new Timer(5000);
         private const int MaxConnectionAttempt = 10;
         private Thread _wallpaperUpdaterThread;
@@ -80,12 +81,12 @@ namespace WallpaperDownloader.ViewModels
         /// Вью модель ввода каптчи
         /// </summary>
         public CaptchaViewModel CaptchaViewModel { get; set; }
-        
+
         /// <summary>
         /// Статус авторизации
         /// </summary>
         public bool AuthorizationStatus => _api.IsAuthorized;
-        
+
         public ObservableCollection<Period> Periods { get; } = new ObservableCollection<Period>
         {
             new Period(WallpaperUpdateType.HalfAnHour, Localization.strings.Period1, new TimeSpan(0,0,30,0)),
@@ -110,7 +111,7 @@ namespace WallpaperDownloader.ViewModels
             get => _workGroup;
             set => SetProperty(ref _workGroup, value);
         }
-        
+
         #endregion
 
         public MainViewModel()
@@ -123,7 +124,7 @@ namespace WallpaperDownloader.ViewModels
 
             SelectedPeriod = Periods.FirstOrDefault(p => p.Type == UserSettings.WallpaperUpdateType);
             LastDownloadDateTime = UserSettings.LastDownloadPhotoDateTime;
-            
+
             WindowMinHeight = Properties.Settings.Default.WindowMinHeight;
             WindowMinWidth = Properties.Settings.Default.WindowMinWidth;
 
@@ -274,7 +275,7 @@ namespace WallpaperDownloader.ViewModels
         }
 
         #region Initialize
-    
+
         /// <summary>
         /// Инициализация апи
         /// </summary>
@@ -308,11 +309,11 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Авторизация по токену
         /// </summary>
-        public async void AuthorizeFromAccessToken(long? captchaSid = null, string captchaKey = null)
+        public async void AuthorizeFromAccessToken(ulong? captchaSid = null, string captchaKey = null)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.AccessToken))
                 return;
-            
+
             try
             {
                 var apiParams = new ApiAuthParams
@@ -328,13 +329,13 @@ namespace WallpaperDownloader.ViewModels
                     apiParams.CaptchaSid = captchaSid;
                 }
 
-                _api.Authorize(apiParams);
+                await _api.AuthorizeAsync(apiParams);
             }
             catch (CaptchaNeededException e)
             {
                 InitApi();
 
-                CaptchaViewModel.Open((long)e.Sid, e.Img);
+                CaptchaViewModel.Open(e.Sid, e.Img);
                 return;
             }
             catch (Exception e)
@@ -367,7 +368,7 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Авторизация по логину и паролю
         /// </summary>
-        public void AuthorizeFromLogPass(long? captchaSid = null, string captchaKey = null, bool isOpenTwoFactorWindow = true)
+        private void AuthorizeFromLogPass(ulong? captchaSid = null, string captchaKey = null, bool isOpenTwoFactorWindow = true)
         {
             if (string.IsNullOrWhiteSpace(UserSettings.UserName) || UserSettings.Password.Length == 0)
                 return;
@@ -378,7 +379,6 @@ namespace WallpaperDownloader.ViewModels
                 {
                     TwoFactorAuthorizationViewModel.Open();
                 });
-                
             }
 
             Task.Run(() =>
@@ -409,7 +409,7 @@ namespace WallpaperDownloader.ViewModels
                     if (_api.IsAuthorized)
                     {
                         UserSettings.AccessToken = _api.Token;
-                        if (_api.UserId != null) UserSettings.UserId = (uint) _api.UserId;
+                        if (_api.UserId != null) UserSettings.UserId = (uint)_api.UserId;
                         UserSettings.Save();
                     }
                 }
@@ -417,17 +417,7 @@ namespace WallpaperDownloader.ViewModels
                 {
                     UiInvoker.Invoke(() =>
                     {
-                        CaptchaViewModel.Open((long) e.Sid, e.Img);
-                    });
-                }
-                catch (VkApiAuthorizationException e)
-                {
-                    LoggerFacade.WriteError(Localization.strings.AuthorizeError + Environment.NewLine + e.Message,
-                        isShow: true);
-
-                    UiInvoker.Invoke(() =>
-                    {
-                        ConnectionSettingsCommand.Execute(null);
+                        CaptchaViewModel.Open(e.Sid, e.Img);
                     });
                 }
                 catch (VkAuthorizationException e)
@@ -483,19 +473,13 @@ namespace WallpaperDownloader.ViewModels
 
             try
             {
-                //Вступаем в группу
-                _api.Groups.Join(AppInfo.HDWallpaperGroupId * -1);
+                var groupIdInStr = (AppInfo.HDWallpaperGroupId * -1).ToString();
 
-                var groups = await _api.Groups.GetAsync(new GroupsGetParams
+                var groups = await _api.Groups.GetByIdAsync(new List<string>{groupIdInStr}, groupIdInStr,GroupsFields.All);
+
+                if (groups != null && groups.Count != 0)
                 {
-                    Extended = true
-                });
-
-                var group = groups.FirstOrDefault(g => g.Id == AppInfo.HDWallpaperGroupId * -1);
-
-                if (group != null)
-                {
-                    WorkGroup = new GroupViewModel(group);
+                    WorkGroup = new GroupViewModel(groups.First());
                 }
             }
             catch (Exception e)
@@ -511,7 +495,7 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Загрузка
         /// </summary>
-        public void OnLoad()
+        private void OnLoad()
         {
             if (!_isLoadStartupProcedure)
             {
@@ -524,7 +508,7 @@ namespace WallpaperDownloader.ViewModels
             UserSettings.Save();
         }
 
-        public void ExitFromApp()
+        private void ExitFromApp()
         {
             try
             {
@@ -621,7 +605,7 @@ namespace WallpaperDownloader.ViewModels
 
         private void Api_OnTokenExpires(VkApi sender)
         {
-            AuthorizeFromLogPass(captchaSid:null, captchaKey:null, isOpenTwoFactorWindow:false);
+            AuthorizeFromLogPass(captchaSid: null, captchaKey: null, isOpenTwoFactorWindow: false);
         }
 
         #endregion

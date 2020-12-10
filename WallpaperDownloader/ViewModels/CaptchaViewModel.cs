@@ -45,7 +45,7 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Ключ каптчи
         /// </summary>
-        public long CaptchaSid { get; set; }
+        public ulong CaptchaSid { get; set; }
 
         /// <summary>
         /// Uri каптчи
@@ -108,7 +108,7 @@ namespace WallpaperDownloader.ViewModels
         /// <summary>
         /// Открыть окно ввода captcha
         /// </summary>
-        public void Open(long captchaSid, Uri captchaUrl)
+        public void Open(ulong captchaSid, Uri captchaUrl)
         {
             Captcha = string.Empty;
             CaptchaSid = captchaSid;
