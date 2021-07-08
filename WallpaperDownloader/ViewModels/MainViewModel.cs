@@ -396,7 +396,8 @@ namespace WallpaperDownloader.ViewModels
                             return code;
                         },
                         CaptchaKey = captchaKey,
-                        Settings = Settings.All
+                        Settings = Settings.All,
+                        IsTokenUpdateAutomatically = true
                     };
 
                     if (captchaSid != null)
