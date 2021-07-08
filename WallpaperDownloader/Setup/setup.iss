@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "WallpaperDownloader"
-#define MyAppVersion "1.1.0.0"
+#define MyAppVersion "1.1.0.1"
 #define MyAppPublisher "CauMoH"
 #define MyAppExeName "WallpaperDownloader.exe"
 #define Net461InstallerUrl "https://download.microsoft.com/download/E/4/1/E4173890-A24A-4936-9FC9-AF930FE3FA40/NDP461-KB3102436-x86-x64-AllOS-ENU.exe"
