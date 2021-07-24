@@ -2,7 +2,7 @@
 
 [![Download](https://github.com/CauMoH/WallpaperDownloader/blob/master/WallpaperDownloader/Views/Images/windows-logo.png)](https://github.com/CauMoH/WallpaperDownloader/raw/master/WallpaperDownloader/Setup/Output/WallpaperDownloader_v_1.1.0.1_setup.exe)  [Скачать](https://github.com/CauMoH/WallpaperDownloader/raw/master/WallpaperDownloader/Setup/Output/WallpaperDownloader_v_1.1.0.1_setup.exe)
 
-Приложение для автоматического обновления обоев рабочего стола с группы ВКонтакте - HD ОБОИ.
+Приложение для автоматического обновления обой рабочего стола с группы ВКонтакте - HD ОБОИ.
 
 
 # Установка
